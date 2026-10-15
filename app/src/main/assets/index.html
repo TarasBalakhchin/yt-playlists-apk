@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>YouTube Плейлисты</title>
+  <style>
+    :root {
+      --bg-main: #0f0f12;
+      --bg-card: #18181d;
+      --bg-hover: #291518;
+      --border: #2a2a33;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, Roboto, sans-serif;
+      background-color: var(--bg-main);
+      background-image: radial-gradient(circle at 50% 0%, rgba(165, 15, 15, 0.32) 0%, transparent 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #b81111 0%, #5c0404 100%);
+      border: 1px solid #e03131;
+      box-shadow: 0 3px 10px rgba(185, 20, 20, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    .brand-title { font-size: 17px; font-weight: 700; color: #fff; }
+
+    .count-badge {
+      background: rgba(163, 15, 15, 0.28);
+      border: 1px solid rgba(224, 36, 36, 0.45);
+      color: #ff8080;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 12px 13px;
+      margin-bottom: 8px;
+      border-radius: 10px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: #c92a2a;
+      box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25);
+    }
+
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+
+    button {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #a81010 0%, #690505 100%);
+      border-color: #cc2929;
+      box-shadow: 0 3px 10px rgba(150, 0, 0, 0.4);
+    }
+
+    .btn-batch {
+      background: linear-gradient(180deg, #2a1215 0%, #1c0c0e 100%);
+      border-color: #631c22;
+      color: #fca5a5;
+    }
+
+    .btn-danger { color: #fca5a5; border-color: #4a1c20; }
+
+    .status {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      min-height: 18px;
+      text-align: center;
+    }
+
+    #videoList {
+      flex: 1;
+      overflow-y: auto;
+      background: #131317;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px;
+      margin-bottom: 12px;
+      min-height: 240px;
+    }
+
+    .video-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 13.5px;
+      border-radius: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .video-item:active { background: var(--bg-hover); }
+
+    .video-num {
+      min-width: 26px;
+      height: 24px;
+      border-radius: 6px;
+      background: #8c1010;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .video-title { flex: 1; line-height: 1.35; }
+
+    .pl-badge {
+      background: rgba(163, 15, 15, 0.35);
+      border: 1px solid rgba(224, 36, 36, 0.4);
+      color: #fca5a5;
+      font-size: 10.5px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      max-width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .empty-hint {
+      padding: 24px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .footer-title {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #6b7280;
+      margin-bottom: 6px;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">▶</div>
+      <div class="brand-title">YouTube Плейлисты</div>
+    </div>
+    <div id="plCountBadge" class="count-badge">0 листов</div>
+  </div>
+
+  <div class="row">
+    <input type="text" id="urlInput" placeholder="Вставьте ссылку на плейлист или канал..." style="margin-bottom:0;">
+    <button id="addUrlBtn" class="btn-primary" style="max-width: 115px;">＋ Собрать</button>
+  </div>
+
+  <button id="batchChannelBtn" class="btn-batch" style="margin-bottom: 8px;">📥 Собрать все плейлисты по ссылке канала</button>
+
+  <div id="status" class="status">В приложении YouTube нажмите «Поделиться» → «YT Плейлисты»</div>
+
+  <select id="playlistSelect">
+    <option value="">-- Все плейлисты --</option>
+  </select>
+
+  <input type="text" id="searchInput" placeholder="🔍 Быстрый поиск видео по названию...">
+
+  <div class="row">
+    <button id="openBtn" class="btn-primary">↗ Открыть в YouTube</button>
+    <button id="deleteBtn" class="btn-danger" style="max-width: 120px;">✕ Удалить</button>
+  </div>
+
+  <div id="videoList"></div>
+
+  <div class="footer-title">Обмен базой плейлистов с другом (.json)</div>
+  <div class="row" style="margin-bottom: 0;">
+    <button id="exportBtn">📤 Сохранить в файл</button>
+    <button id="importBtn">📂 Загрузить файл</button>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" style="display: none;">
+
+  <script>
+    const STORAGE_KEY = 'yt_quick_playlists_v3';
+    const select = document.getElementById('playlistSelect');
+    const searchInput = document.getElementById('searchInput');
+    const urlInput = document.getElementById('urlInput');
+    const addUrlBtn = document.getElementById('addUrlBtn');
+    const batchChannelBtn = document.getElementById('batchChannelBtn');
+    const videoList = document.getElementById('videoList');
+    const statusEl = document.getElementById('status');
+    const openBtn = document.getElementById('openBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const plCountBadge = document.getElementById('plCountBadge');
+
+    let cachedPlaylists = {};
+
+    function getPlaylists() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+      catch (e) { return {}; }
+    }
+
+    function savePlaylists(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    window.setStatusFromNative = function(msg) {
+      statusEl.textContent = msg;
+    };
+
+    window.receiveRawPlaylistData = function(listId, rawJsonStr) {
+      try {
+        const data = JSON.parse(rawJsonStr);
+        const title =
+          data?.metadata?.playlistMetadataRenderer?.title ||
+          data?.header?.playlistHeaderRenderer?.title?.simpleText ||
+          `Плейлист ${listId.slice(0, 6)}`;
+
+        const videos = [];
+        const seen = new Set();
+
+        function walk(node) {
+          if (!node || typeof node !== 'object') return;
+          if (node.playlistVideoRenderer) {
+            const pvr = node.playlistVideoRenderer;
+            const vId = pvr.videoId;
+            const vTitle = pvr.title?.runs?.[0]?.text || pvr.title?.simpleText;
+            if (vId && vTitle && !seen.has(vId)) {
+              seen.add(vId);
+              videos.push({
+                title: vTitle.trim(),
+                url: `https://www.youtube.com/watch?v=${vId}&list=${listId}`
+              });
+            }
+            return;
+          }
+          for (const k in node) walk(node[k]);
+        }
+        walk(data);
+
+        cachedPlaylists[listId] = {
+          id: listId,
+          title: title.trim(),
+          url: `https://www.youtube.com/playlist?list=${listId}`,
+          videos
+        };
+        savePlaylists(cachedPlaylists);
+        statusEl.textContent = `✓ Сохранено: «${title}» (${videos.length} видео)`;
+        loadPlaylists(listId);
+      } catch (e) {
+        statusEl.textContent = 'Ошибка разбора данных плейлиста.';
+      }
+    };
+
+    function loadPlaylists(selectedId = '') {
+      cachedPlaylists = getPlaylists();
+      const ids = Object.keys(cachedPlaylists);
+      plCountBadge.textContent = `${ids.length} листов`;
+      select.innerHTML = `<option value="">-- Все плейлисты (${ids.length}) --</option>`;
+
+      ids.forEach((id) => {
+        const pl = cachedPlaylists[id];
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `${pl.title} (${pl.videos?.length || 0})`;
+        if (id === selectedId) option.selected = true;
+        select.appendChild(option);
+      });
+
+      renderCurrentView();
+    }
+
+    function renderCurrentView() {
+      const selectedId = select.value;
+      const query = searchInput.value.trim().toLowerCase();
+      videoList.innerHTML = '';
+
+      if (selectedId && cachedPlaylists[selectedId]) {
+        const pl = cachedPlaylists[selectedId];
+        const filtered = (pl.videos || []).filter(v => v.title.toLowerCase().includes(query));
+        if (filtered.length === 0) {
+          videoList.innerHTML = '<div class="empty-hint">Видео не найдены.</div>';
+          return;
+        }
+        filtered.forEach((v, idx) => appendVideoCard(idx + 1, v.title, v.url));
+        return;
+      }
+
+      if (!query) {
+        videoList.innerHTML = '<div class="empty-hint">В приложении YouTube нажмите <b>«Поделиться»</b> под любым плейлистом и выберите <b>YT Плейлисты</b> — он сразу появится здесь.<br><br>Или выберите список выше / введите запрос в поиск.</div>';
+        return;
+      }
+
+      let foundCount = 0;
+      for (const id in cachedPlaylists) {
+        const pl = cachedPlaylists[id];
+        (pl.videos || []).forEach((v) => {
+          if (v.title.toLowerCase().includes(query)) {
+            foundCount++;
+            appendVideoCard(foundCount, v.title, v.url, pl.title);
+          }
+        });
+      }
+
+      if (foundCount === 0) {
+        videoList.innerHTML = '<div class="empty-hint">Совпадений не найдено.</div>';
+      }
+    }
+
+    function appendVideoCard(index, title, url, playlistName = '') {
+      const a = document.createElement('a');
+      a.className = 'video-item';
+      a.href = url;
+
+      const numBox = document.createElement('span');
+      numBox.className = 'video-num';
+      numBox.textContent = index;
+      a.appendChild(numBox);
+
+      if (playlistName) {
+        const badge = document.createElement('span');
+        badge.className = 'pl-badge';
+        badge.textContent = playlistName;
+        a.appendChild(badge);
+      }
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'video-title';
+      titleSpan.textContent = title;
+      a.appendChild(titleSpan);
+
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.AndroidBridge) {
+          window.AndroidBridge.openInYouTubeApp(url);
+        } else {
+          window.open(url, '_blank');
+        }
+      });
+
+      videoList.appendChild(a);
+    }
+
+    addUrlBtn.addEventListener('click', () => {
+      const val = urlInput.value.trim();
+      const match = val.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+      const listId = match ? match[1] : val;
+      if (!listId) {
+        statusEl.textContent = 'Вставьте ссылку на плейлист YouTube.';
+        return;
+      }
+      if (window.AndroidBridge) {
+        window.AndroidBridge.fetchPlaylistById(listId);
+        urlInput.value = '';
+      }
+    });
+
+    batchChannelBtn.addEventListener('click', () => {
+      const val = urlInput.value.trim();
+      if (!val.startsWith('http')) {
+        statusEl.textContent = 'Вставьте в поле выше ссылку на раздел «Плейлисты» канала.';
+        return;
+      }
+      if (window.AndroidBridge) {
+        window.AndroidBridge.fetchAllPlaylistsFromUrl(val);
+      }
+    });
+
+    select.addEventListener('change', renderCurrentView);
+    searchInput.addEventListener('input', renderCurrentView);
+
+    openBtn.addEventListener('click', () => {
+      const pl = cachedPlaylists[select.value];
+      if (!pl) return;
+      if (window.AndroidBridge) window.AndroidBridge.openInYouTubeApp(pl.url);
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      if (!select.value) return;
+      delete cachedPlaylists[select.value];
+      savePlaylists(cachedPlaylists);
+      statusEl.textContent = 'Плейлист удалён.';
+      loadPlaylists();
+    });
+
+    exportBtn.addEventListener('click', () => {
+      const count = Object.keys(cachedPlaylists).length;
+      if (count === 0) {
+        statusEl.textContent = 'Список пуст — нечего сохранять.';
+        return;
+      }
+      const jsonStr = JSON.stringify(cachedPlaylists, null, 2);
+      const fileName = `youtube-playlists-${new Date().toISOString().slice(0, 10)}.json`;
+      if (window.AndroidBridge) {
+        window.AndroidBridge.saveJsonToFile(jsonStr, fileName);
+      }
+    });
+
+    importBtn.addEventListener('click', () => importFile.click());
+
+    importFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          let addedCount = 0;
+          for (const id in imported) {
+            if (imported[id]?.title && imported[id]?.url) {
+              cachedPlaylists[id] = imported[id];
+              addedCount++;
+            }
+          }
+          savePlaylists(cachedPlaylists);
+          statusEl.textContent = `✓ Импортировано плейлистов: ${addedCount}`;
+          loadPlaylists();
+        } catch (err) {
+          statusEl.textContent = 'Ошибка: неверный формат файла.';
+        }
+        importFile.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    loadPlaylists();
+  </script>
+</body>
+</html>
